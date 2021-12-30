@@ -3,7 +3,7 @@ const conexion = require('./mysql');
 const util = require('util');
 const mysql = util.promisify(conexion.query).bind(conexion);
 
-const consulta_sql = async (sql, [variables]) => 
+const consulta_sql = async (sql, variables) => 
 {
     let respuesta = { mensaje: '', tipo_error: 0, resultado: null };
     let consulta = null;
