@@ -8,21 +8,26 @@ const registrar_persona = async (persona) => {
     try {
 
         let existe_persona = await query.consulta_sql(sql.SQL_EXISTE_PERSONA, [persona.correo, persona.telefono, persona.identificacion]);
-        if (existe_persona.tipo_error == 0) {
-            if (existe_persona.resultado[0]) {
+        if (existe_persona.tipo_error == 0) 
+        {
+            if (existe_persona.resultado[0]) 
+            {
                 respuesta.tipo_error = 3;
                 respuesta.mensaje = "El correo, telefono o identificación ya existe";
                 return respuesta;
             }
             let existe_login = await query.consulta_sql(sql.SQL_EXISTE_LOGIN_CLIENTE, [persona.usuario]);
-            if (existe_login.tipo_error == 0) {
-                if (existe_login.resultado[0]) {
+            if (existe_login.tipo_error == 0) 
+            {
+                if (existe_login.resultado[0]) 
+                {
                     respuesta.tipo_error = 3;
                     respuesta.mensaje = "El usuario ya existe";
                     return respuesta;
                 }
             }
-            else {
+            else 
+            {
                 respuesta = existe_login;
                 return respuesta;
             }
@@ -33,7 +38,7 @@ const registrar_persona = async (persona) => {
         }
         connection.beginTransaction(async err => 
         {
-            if (err) throw err;
+            if (err) {throw err};
 
             let crear_persona = await query.consulta_sql(sql.SQL_REGISTRAR_PERSONA,
                 [
@@ -92,7 +97,85 @@ const registrar_persona = async (persona) => {
 
 }
 
+const obtener_preguntas = async () =>
+{
+    let preguntas;
+    let respuesta = { mensaje: '', tipo_error: 0, resultado: null };
+    try 
+    {
+        respuesta = await query.consulta_sql(sql.SQL_PREGUNTAS);
+        if(respuesta.tipo_error == 0)
+        {
+            if(respuesta.resultado.length > 0)
+            {
+                preguntas = respuesta.resultado;
+                let opciones = await query.consulta_sql(sql.SQL_OPCIONES);
+
+                for (let i = 0; i < preguntas.length; i++) {
+                    
+                    let i_pregunta = preguntas[i].id_pregunta;
+                    
+                    let opcion = opciones.resultado.filter(id => id.id_pregunta == i_pregunta);
+                    if(opcion != null)
+                    {
+                        preguntas[i].opcion = opcion;
+                    }                    
+                }
+                respuesta.resultado = preguntas;
+            }
+        }    
+    } 
+    catch (error) 
+    {
+        throw error;
+    }
+    return respuesta;
+
+}
+
+const registrar_preguntas = async (id_persona, cuestionario) => 
+{
+    let respuesta = { mensaje: '', tipo_error: 0, resultado: null };
+    try 
+    {
+        let index = 1;
+        
+        connection.beginTransaction(async err =>
+            {
+                if (err) throw err;
+                for (let i = 0; i < cuestionario.length; i++) 
+                {
+                    let ins_respuestas = await query.consulta_sql(sql.SQL_INSTAR_RESPUESTAS, 
+                        [
+                            cuestionario[i].id_pregunta,
+                            cuestionario[i].respuesta.toString(),
+                            id_persona
+                        ]  
+                    );
+                    if (ins_respuestas.tipo_error != 0)
+                    {
+                        connection.rollback(() => console.log('error') );
+                        respuesta = ins_respuestas;
+                        return respuesta;
+                    }                       
+                    if(index >= cuestionario.length)
+                        connection.commit( () => console.log('successful') )
+                    index++;
+                }   
+            }             
+        );            
+    } 
+    catch (error) 
+    {
+        throw error;
+    }
+    return respuesta;
+}
+
+
 module.exports =
 {
-    registrar_persona
+    registrar_persona,
+    obtener_preguntas,
+    registrar_preguntas
 }

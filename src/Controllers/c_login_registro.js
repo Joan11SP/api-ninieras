@@ -30,6 +30,46 @@ const registrar_persona = async (req,res,next) =>
     next();
 }
 
+const obtener_preguntas = async (req,res,next) => 
+{
+    let respuesta = { mensaje: '', tipo_error: 0, resultado: null };
+
+    try 
+    {
+        respuesta = await s_login_registro.obtener_preguntas();
+    } 
+    catch (error) 
+    {
+        
+    }
+    req.body = respuesta;
+    next();
+}
+
+const registrar_cuestionario = async (req,res,next) =>
+{
+    let respuesta = { mensaje: '', tipo_error: 0, resultado: null };
+    try 
+    {
+        if(!req.body.id_persona || !req.body.respuestas)
+        {
+            respuesta.mensaje = config.MENSAJE_FALTA_INFO;
+            respuesta.tipo_error = config.COD_FALTA_INFO;
+        }
+        else
+        {
+            respuesta = await s_login_registro.registrar_preguntas(req.body.id_persona, req.body.respuestas)
+        }
+    } 
+    catch (error) 
+    {
+        console.log('ERRROR');
+    }
+    req.body = respuesta;
+    next();
+
+}
+
 const validar_login = async (req,res, next) =>
 {
     let respuesta = { mensaje: '', tipo_error: 0, resultado: null };
@@ -57,5 +97,7 @@ const validar_login = async (req,res, next) =>
 module.exports = 
 {
     validar_login,
-    registrar_persona
+    registrar_persona,
+    obtener_preguntas,
+    registrar_cuestionario
 }

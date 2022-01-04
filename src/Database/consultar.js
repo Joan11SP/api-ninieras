@@ -21,6 +21,7 @@ const consulta_sql = async (sql, variables) =>
     {
         respuesta.mensaje = error;
         respuesta.tipo_error = 3;
+        console.log(error);
     }
 
     return respuesta;
