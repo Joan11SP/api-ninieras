@@ -147,29 +147,41 @@ const registrar_horario = async (req,res,next) =>
     try 
     {
         let { id_persona, disponible } = req.body
+        
+        req.body = respuesta;
+
         if(!id_persona || !disponible)
         {
             respuesta.mensaje = config.MENSAJE_FALTA_INFO;
             respuesta.tipo_error = config.COD_FALTA_INFO;
+            next();
         }
-        else
+        if(disponible.length > 7)
         {
-            if(disponible.length > 7)
-            {
-                respuesta.mensaje = "No se puede registrar más de 7 días";
-                respuesta.tipo_error = 1;
-            }
-            else if(disponible.length == 0)
-            {
-                respuesta.mensaje = "No existen días para registrar";
-                respuesta.tipo_error = 1;
-            }
-            else
-                respuesta = await s_login_registro.registrar_horario(req.body);
+            respuesta.mensaje = "No se puede registrar más de 7 días";
+            respuesta.tipo_error = 1;
+            next();
+        }
+        
+        if(disponible.length == 0)
+        {
+            respuesta.mensaje = "No existen días para registrar";
+            respuesta.tipo_error = 1;
+            next();
         }
 
+        disponible.forEach(hora => {
+            
+            if(hora.dia > 7 || hora.dia < 1)
+            {
+                respuesta.mensaje = "Días fuera de rango";
+                respuesta.tipo_error = 1;
+                next();
+            }
+        });
+        let horario = { id_persona, disponible }
+        respuesta = await s_login_registro.registrar_horario(horario);
         
-
     } 
     catch (error) 
     {

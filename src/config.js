@@ -9,6 +9,7 @@ module.exports = {
     MSG_LOGIN_BLOQUEADO:'Usuario bloqueado.',
     COD_LOGIN_BLOQUEADO:2,
     MSG_PASS_INCORRECTA: 'Usuario o contraseña incorrecta.',
-    COD_PASS_INCORRECTA:3
+    COD_PASS_INCORRECTA:3,
+    UBICACION_IMAGEN_PERFIL: 'C:/Users/Usuario/Desktop/imagenes_app/'
 
 }

@@ -18,7 +18,9 @@ module.exports =
     SQL_VALIGAR_LOGIN_ADMIN: "select id_login_administrador, id_persona, contrasenia, estado, intentos from "+config.NAME_DB+".login_administrador where usuario = ?;",
     SQL_UPD_LOGIN_ERR_ADMIN: "update "+config.NAME_DB+".login_administrador set estado = ?, intentos = ? where usuario = ? and id_persona = ?;",
     SQL_REGISTRAR_HORARIO: "insert into "+config.NAME_DB+".horario_trabajo (id_persona, hora_inicia, hora_finaliza, dia) values (?,?,?,?);",
-    SQL_VAL_EXISTE_DIA_HORARIO: "select 1 existe from "+config.NAME_DB+".horario_trabajo where id_persona = ? and dia = ?;"
+    SQL_VAL_EXISTE_DIA_HORARIO: "select 1 existe from "+config.NAME_DB+".horario_trabajo where id_persona = ? and dia = ?;",
+    SQL_UPD_FOTO_PERFIL:"update "+config.NAME_DB+".persona set foto = ? where id_persona = ?;",
+    SQL_GET_FOTO_PERFIL: "select foto from "+config.NAME_DB+".persona where id_persona = ?;"
 }
 
 

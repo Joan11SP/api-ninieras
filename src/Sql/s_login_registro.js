@@ -344,13 +344,6 @@ const registrar_horario = async (horario) =>
                     for(let i=0; i < horario.disponible.length; i++)
                     {
                         let horas = horario.disponible[i];
-                        if(horas.dia > 7 || horas.dia < 1)
-                        {
-                            connection.rollback(()=> console.log('dias fuera de rango'));                            
-                            respuesta.mensaje = "Días fuera de rango";
-                            respuesta.tipo_error = 1;
-                            break;
-                        } 
                         let val_dia = await query.consulta_sql(sql.SQL_VAL_EXISTE_DIA_HORARIO, [horario.id_persona, horas.dia]);  
                         if(val_dia.tipo_error == 0)
                         {
