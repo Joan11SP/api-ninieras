@@ -1,9 +1,11 @@
 var { Router } = require('express');
 const utilidad = require('../utilities/utilidades');
-var router = Router();
+const router = Router();
 
-const login = require('../Controllers/c_login_registro');
-const persona = require('../Controllers/c_persona')
+const login = require('../Controllers/c_login_registro'),
+      persona = require('../Controllers/c_persona'),
+      servicio = require('../Controllers/c_servicio');
+
 
 // LOGIN    
 router.post('/validar-login', login.validar_login);
@@ -19,6 +21,12 @@ router.post('/registrar-horario', login.registrar_horario);
 //PERSONA
 router.post('/resgistrar-foto-perfil', persona.cambiar_foto_perfil);
 router.post('/obtener-foto-perfil', persona.obtener_foto_perfil);
+router.post('/agregar-cuidado', persona.add_persona_o_animal_cuidado);
+router.post('/agregar-ubicacion', persona.add_ubicacion);
+
+//SERVCIO
+router.post('/solicitar-servicio', servicio.solicitar_servicio_niniera);
+router.post('/obtener-one-servicio', servicio.obtener_one_servicio);
 
 
 module.exports = router;

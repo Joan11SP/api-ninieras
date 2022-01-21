@@ -28,7 +28,7 @@ const registrar_persona = async (persona) => {
             consulta = sql.SQL_EXISTE_LOGIN_NINERA
 
         let existe_login = await query.consulta_sql(consulta, [id_persona]);
-        if (existe_login.resultado[0]) 
+        if (existe_login.resultado[0].existe == 1) 
         {
             respuesta.tipo_error = 3;
             respuesta.mensaje = "El usuario ya existe";
@@ -335,7 +335,7 @@ const registrar_horario = async (horario) =>
     try 
     {
         respuesta = await query.consulta_sql(sql.SQL_EXISTE_LOGIN_NINERA, [horario.id_persona]);
-        if(respuesta.resultado[0])
+        if(respuesta.resultado[0].existe == 1)
         {
             connection.beginTransaction(async err => 
                 {
