@@ -1,6 +1,5 @@
-var { Router } = require('express');
+const router = require('express')();
 const utilidad = require('../utilities/utilidades');
-const router = Router();
 
 const login = require('../Controllers/c_login_registro'),
       persona = require('../Controllers/c_persona'),
@@ -27,6 +26,7 @@ router.post('/agregar-ubicacion', persona.add_ubicacion);
 //SERVCIO
 router.post('/solicitar-servicio', servicio.solicitar_servicio_niniera);
 router.post('/obtener-one-servicio', servicio.obtener_one_servicio);
+router.post('/proponer-servicio', servicio.add_proponer_servicio);
 
 
 module.exports = router;

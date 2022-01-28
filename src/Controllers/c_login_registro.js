@@ -16,6 +16,11 @@ const registrar_persona = async (req,res,next) =>
             respuesta.mensaje = config.MENSAJE_FALTA_INFO;
             respuesta.tipo_error = config.COD_FALTA_INFO;
         }
+        else if (req.body.app != 'app_cliente' || req.body.app != 'app_niniera')
+        {
+            respuesta.mensaje = 'Proceso incorrecto';
+            respuesta.tipo_error = config.COD_FALTA_INFO;
+        }
         else
         {
             req.body.app = app;

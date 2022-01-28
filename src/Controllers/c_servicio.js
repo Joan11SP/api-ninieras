@@ -2,6 +2,7 @@ const moment = require('moment');
 const config = require('../config');
 const s_servicio = require('../Sql/s_servicio');
 const utilidades = require('../utilities/utilidades');
+const firebase = require('../utilities/firebase');
 
 const solicitar_servicio_niniera = async (req,res,next) =>
 {
@@ -15,7 +16,7 @@ const solicitar_servicio_niniera = async (req,res,next) =>
             !req.body.hora_fin || 
             !req.body.codigo_dactilar ||
             !req.body.identificacion ||
-            !req.body.id_persona ||
+            !req.body.id_cliente ||
             !req.body.cuidados
          )
         {
@@ -66,7 +67,7 @@ const obtener_one_servicio = async (req,res,next) =>
 
     try 
     {
-        if(!req.body.id_persona || !req.body.id_solicitud)
+        if(!req.body.id_cliente || !req.body.id_solicitud)
         {
             respuesta.mensaje = config.MENSAJE_FALTA_INFO;
             respuesta.tipo_error = config.COD_FALTA_INFO;
@@ -86,9 +87,44 @@ const obtener_one_servicio = async (req,res,next) =>
 
 }
 
+const add_proponer_servicio = async (req,res,next) =>
+{
+    let respuesta = { mensaje: '', tipo_error: 1, resultado: null };
+    try
+    {
+        if(!req.body.id_niniera || !req.body.id_solicitud)
+        {
+            respuesta.mensaje = config.MENSAJE_FALTA_INFO;
+            respuesta.tipo_error = config.COD_FALTA_INFO;
+        }
+        else
+        {
+            respuesta = await s_servicio.add_proponer_servicio(req.body);
+            if(respuesta.tipo_error == 0)
+            {
+                let body = respuesta.resultado.nombre_propone+ ' ' + 'ha realizado una propuesta del servicio. 👩‍🍼';
+                let token = respuesta.resultado.token_fcm
+                if(token !== 'STF')
+                {
+                    await firebase.enviar_notificacion_fcm('Propuesta de servicio', body, token);
+                }
+
+            }
+            respuesta.resultado = null;
+        }
+    }
+    catch (error) 
+    {
+        respuesta = utilidades.respuesta_error(error);
+    }
+    req.body = respuesta;
+    next();
+}
+
 module.exports = 
 {
     solicitar_servicio_niniera,
-    obtener_one_servicio
+    obtener_one_servicio,
+    add_proponer_servicio
 }
 

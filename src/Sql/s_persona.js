@@ -61,7 +61,7 @@ const add_persona_o_animal_cuidado = async (cuidado) =>
 
     try 
     {
-        respuesta = await  query.consulta_sql(sql.SQL_EXISTE_LOGIN_CLIENTE, [cuidado.id_persona]);
+        respuesta = await  query.consulta_sql(sql.SQL_EXISTE_LOGIN_CLIENTE, [cuidado.id_cliente]);
         if(respuesta.tipo_error == 0)
         {
             if(respuesta.resultado[0].existe == 1)
@@ -69,7 +69,7 @@ const add_persona_o_animal_cuidado = async (cuidado) =>
 
                 respuesta = await query.consulta_sql(sql.SQL_ADD_PERS_ANIMAL_CUIDADO,
                     [
-                        cuidado.id_persona,
+                        cuidado.id_cliente,
                         cuidado.nombres,
                         cuidado.edad,
                         cuidado.sexo,
@@ -100,7 +100,7 @@ const add_ubicacion = async (ubicacion) =>
     let respuesta = { mensaje: '', tipo_error: 0, resultado: null };
     try
     {
-        respuesta = await  query.consulta_sql(sql.SQL_EXISTE_LOGIN_CLIENTE, [ubicacion.id_persona]);
+        respuesta = await  query.consulta_sql(sql.SQL_EXISTE_LOGIN_CLIENTE, [ubicacion.id_cliente]);
         if(respuesta.tipo_error == 0)
         {
             if(respuesta.resultado[0].existe == 1)
@@ -113,7 +113,7 @@ const add_ubicacion = async (ubicacion) =>
                         ubicacion.longitud,
                         ubicacion.referencia.toString().trim(),
                         ubicacion.calles.toString().trim(),
-                        ubicacion.id_persona
+                        ubicacion.id_cliente
                     ]
                 );
             }

@@ -19,7 +19,7 @@ const consulta_sql = async (sql, variables) =>
     } 
     catch (error) 
     {
-        respuesta.mensaje = error;
+        respuesta.mensaje = 'Se produjo un error, intente más tarde.';
         respuesta.tipo_error = 3;
         respuesta.resultado = null;
         console.log(error);

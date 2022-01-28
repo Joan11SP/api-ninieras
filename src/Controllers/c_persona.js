@@ -73,11 +73,11 @@ const add_persona_o_animal_cuidado = async (req,res, next) =>
     var respuesta = { mensaje: '', tipo_error: 1, resultado: null };
     try 
     {
-        if (!req.body.id_persona
+        if (!req.body.id_cliente
             || !req.body.nombres
             || !req.body.edad
             || !req.body.sexo
-            || (req.body.capacidad_diferente == '' || req.body.capacidad_diferente == null)
+            || (req.body.capacidad_diferente == '' && req.body.capacidad_diferente == null)
             || !req.body.es_persona_o_animal
         )
         {
@@ -108,7 +108,7 @@ const add_ubicacion = async (req,res,next) =>
     var respuesta = { mensaje: '', tipo_error: 1, resultado: null };
     try 
     {
-        if (!req.body.id_persona
+        if (!req.body.id_cliente
             || !req.body.nombre_ubicacion
             || !req.body.latitud
             || !req.body.longitud
