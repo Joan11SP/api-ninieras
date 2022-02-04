@@ -17,58 +17,54 @@ const solicitar_servicio_niniera = async (servicio) =>
         {
             if(respuesta.resultado[0].existe == 0)
             {
-                connection.beginTransaction(async (err) =>
-                    {
-                        if(err) throw err;
+                await connection.beginTransaction((err) => {console.log(err);});
 
-                        respuesta = await query.consulta_sql(sql.SQL_ADD_SOL_SERVICIO,
-                            [
-                                servicio.id_cliente,
-                                servicio.id_ubicacion,
-                                servicio.hora_inicio,
-                                servicio.hora_fin,
-                                servicio.fecha_inicio,
-                                servicio.fecha_fin,
-                                servicio.total_dias,
-                                servicio.codigo_dactilar,
-                                servicio.identificacion,
-                                servicio.usu_wifi,
-                                servicio.descripcion,
-                                servicio.total_horas
-                            ]                    
-                        );
-                        
+                respuesta = await query.consulta_sql(sql.SQL_ADD_SOL_SERVICIO,
+                    [
+                        servicio.id_cliente,
+                        servicio.id_ubicacion,
+                        servicio.hora_inicio,
+                        servicio.hora_fin,
+                        servicio.fecha_inicio,
+                        servicio.fecha_fin,
+                        servicio.total_dias,
+                        servicio.codigo_dactilar,
+                        servicio.identificacion,
+                        servicio.usu_wifi,
+                        servicio.descripcion,
+                        servicio.total_horas
+                    ]                    
+                );
+                console.log(respuesta);
+                if(respuesta.tipo_error != 0)
+                {
+                    await connection.rollback(() => console.log('Error'));
+                    return respuesta;
+                }
+                let id_solicitud = respuesta.resultado.insertId;
+
+                for (let i = 0; i < servicio.cuidados.length; i++) {
+
+                    respuesta = await query.consulta_sql(sql.SQL_VAL_EXISTE_CUIDAD, [servicio.cuidados[i], servicio.id_cliente]);
+                    if(respuesta.tipo_error != 0)
+                    {
+                        await connection.rollback(err => console.log(err));
+                        return respuesta;
+                    }
+                    if(respuesta.resultado[0].existe == 1)
+                    {
+                        respuesta = await query.consulta_sql(sql.SQL_ADD_DETALLE_CIUDAD_SERVICIO, [id_solicitud,servicio.cuidados[i]]);
                         if(respuesta.tipo_error != 0)
                         {
-                            connection.rollback(err => console.log(err));
+                            await connection.rollback(err => console.log(err));
                             return respuesta;
                         }
-                        let id_solicitud = respuesta.resultado.insertId;
+                    }                           
+                }
+                if(respuesta.tipo_error == 0){
 
-                        for (let i = 0; i < servicio.cuidados.length; i++) {
-
-                            respuesta = await query.consulta_sql(sql.SQL_VAL_EXISTE_CUIDAD, [servicio.cuidados[i], servicio.id_cliente]);
-                            if(respuesta.tipo_error != 0)
-                            {
-                                connection.rollback(err => console.log(err));
-                                return respuesta;
-                            }
-                            if(respuesta.resultado[0].existe == 1)
-                            {
-                                respuesta = await query.consulta_sql(sql.SQL_ADD_DETALLE_CIUDAD_SERVICIO, [id_solicitud,servicio.cuidados[i]]);
-                                if(respuesta.tipo_error != 0)
-                                {
-                                    connection.rollback(err => console.log(err));
-                                    return respuesta;
-                                }
-                            }                           
-                        }
-                        if(respuesta.tipo_error == 0){
-
-                            connection.commit(()=>{})
-                        }
-                    }
-                );
+                    await connection.commit(()=>{})
+                }
                 
             }
             else
@@ -78,10 +74,7 @@ const solicitar_servicio_niniera = async (servicio) =>
             }
         }
         respuesta.resultado = null;
-        if(respuesta.tipo_error == 0)
-        {
-            respuesta.mensaje = 'Se creo correctamente.'
-        }
+        console.log(respuesta);
     } 
     catch (error) 
     {

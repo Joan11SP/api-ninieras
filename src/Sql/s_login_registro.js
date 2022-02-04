@@ -36,9 +36,9 @@ const registrar_persona = async (persona) => {
             return respuesta;
         }
         let crear_persona = null;
-        connection.beginTransaction(async err => {
-            if (err) { throw err };
-            if (existe_persona == false)
+        await connection.beginTransaction(async err => {});
+
+        if (existe_persona == false)
             {
                 crear_persona = await query.consulta_sql(sql.SQL_REGISTRAR_PERSONA,
                     [
@@ -92,8 +92,6 @@ const registrar_persona = async (persona) => {
                 respuesta = crear_persona;
             }
 
-        });
-
     }
     catch (error) {
         throw error;
@@ -141,27 +139,24 @@ const registrar_preguntas = async (id_persona, cuestionario) => {
         }
 
         let index = 1;
-        connection.beginTransaction(async err => {
-            if (err) throw err;
-            for (let i = 0; i < cuestionario.length; i++) {
-                let ins_respuestas = await query.consulta_sql(sql.SQL_INSTAR_RESPUESTAS,
-                    [
-                        cuestionario[i].id_pregunta,
-                        cuestionario[i].respuesta.toString(),
-                        id_persona
-                    ]
-                );
-                if (ins_respuestas.tipo_error != 0) {
-                    connection.rollback(() => console.log('error'));
-                    respuesta = ins_respuestas;
-                    return respuesta;
-                }
-                if (index >= cuestionario.length)
-                    connection.commit(() => console.log('successful'))
-                index++;
+        await connection.beginTransaction(async err => {});
+        for (let i = 0; i < cuestionario.length; i++) {
+            let ins_respuestas = await query.consulta_sql(sql.SQL_INSTAR_RESPUESTAS,
+                [
+                    cuestionario[i].id_pregunta,
+                    cuestionario[i].respuesta.toString(),
+                    id_persona
+                ]
+            );
+            if (ins_respuestas.tipo_error != 0) {
+                connection.rollback(() => console.log('error'));
+                respuesta = ins_respuestas;
+                return respuesta;
             }
+            if (index >= cuestionario.length)
+                connection.commit(() => console.log('successful'))
+            index++;
         }
-        );
     }
     catch (error) {
         throw error;
@@ -319,33 +314,34 @@ const registrar_horario = async (horario) => {
     try {
         respuesta = await query.consulta_sql(sql.SQL_EXISTE_LOGIN_NINERA, [horario.id_persona]);
         if (respuesta.resultado[0].existe == 1) {
-            connection.beginTransaction(async err => {
-                if (err) { throw err };
-
-                for (let i = 0; i < horario.disponible.length; i++) {
-                    let horas = horario.disponible[i];
-                    let val_dia = await query.consulta_sql(sql.SQL_VAL_EXISTE_DIA_HORARIO, [horario.id_persona, horas.dia]);
-                    if (val_dia.tipo_error == 0) {
-                        if (val_dia.resultado[0]) {
-                            connection.rollback(() => { });
-                            respuesta.mensaje = "El día ya fue registrado";
-                            respuesta.tipo_error = 1;
-                            break;
-                        }
-                    }
-                    let registrar = await query.consulta_sql(sql.SQL_REGISTRAR_HORARIO, [horario.id_persona, horas.hora_inicia, horas.hora_finaliza, horas.dia]);
-                    if (registrar.tipo_error == 3) {
+            await connection.beginTransaction(async err => {});
+            for (let i = 0; i < horario.disponible.length; i++) 
+            {
+                let horas = horario.disponible[i];
+                let val_dia = await query.consulta_sql(sql.SQL_VAL_EXISTE_DIA_HORARIO, [horario.id_persona, horas.dia]);
+                if (val_dia.tipo_error == 0) 
+                {
+                    if (val_dia.resultado[0]) 
+                    {
                         connection.rollback(() => { });
-                        respuesta.mensaje = "Error en creación de horario";
+                        respuesta.mensaje = "El día ya fue registrado";
                         respuesta.tipo_error = 1;
                         break;
                     }
                 }
-                if (respuesta.tipo_error == 0) {
-                    connection.commit(() => { });
+                let registrar = await query.consulta_sql(sql.SQL_REGISTRAR_HORARIO, [horario.id_persona, horas.hora_inicia, horas.hora_finaliza, horas.dia]);
+                if (registrar.tipo_error == 3) 
+                {
+                    connection.rollback(() => { });
+                    respuesta.mensaje = "Error en creación de horario";
+                    respuesta.tipo_error = 1;
+                    break;
                 }
             }
-            );
+            if (respuesta.tipo_error == 0) 
+            {
+                connection.commit(() => { });
+            }
         }
         else {
             respuesta.mensaje = "La persona no existe"

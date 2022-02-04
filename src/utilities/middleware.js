@@ -20,7 +20,6 @@ const validarDatosEntrada = async (req,res,next) => {
 }
 
 const enviarDatos = (req,res) => {
-    console.log(req.body);
     res.send(req.body);
 
 }
