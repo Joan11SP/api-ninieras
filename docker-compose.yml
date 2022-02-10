@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  web: 
+    container_name: node
+    restart: always
+    build: .
+    ports:
+      - "4500:3005"
+    depends_on:
+      - mysql
+    volumes: 
+      - .:/usr/src/app
+  mysql:
+    container_name: base_ninieras
+    command: --authentication_policy=mysql_native_password
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: bruja12345#
+    logging:
+      driver: none
+    
+    

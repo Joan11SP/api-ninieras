@@ -7,6 +7,7 @@ const connection = mysql.createConnection(
     password: config.PASSWORD_DB,
     user: config.USER_DB,
     database: config.NAME_DB,
+    port: config.PORT_DB,
     multipleStatements: true
   }
 );
@@ -15,7 +16,7 @@ connection.connect( err =>
   {
     if (err) 
     {
-      console.error('error en base: ' + err.message);
+      console.error(err);
       return;
     }   
     console.log('conectado a mysql');

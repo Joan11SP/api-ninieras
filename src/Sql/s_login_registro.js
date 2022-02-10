@@ -11,8 +11,9 @@ const registrar_persona = async (persona) => {
     let respuesta = { mensaje: '', tipo_error: 0, resultado: null };
     let existe_persona = false, id_persona = 0;
 
-    
-    try {
+
+    try
+    {
 
         let existe_persona = await query.consulta_sql(sql.SQL_EXISTE_PERSONA, [persona.correo, persona.telefono, persona.identificacion]);
         if (existe_persona.resultado[0]) 
@@ -23,7 +24,7 @@ const registrar_persona = async (persona) => {
         else
             existe_persona = false
         let consulta = '';
-        if(persona.app === 'app_cliente')
+        if (persona.app === 'app_cliente')
             consulta = sql.SQL_EXISTE_PER_CLIENTE
         else
             consulta = sql.SQL_EXISTE_PER_NINIERA
@@ -36,64 +37,66 @@ const registrar_persona = async (persona) => {
             return respuesta;
         }
         let crear_persona = null;
-        await connection.beginTransaction(async err => {});
+        await connection.beginTransaction(async err => { });
 
         if (existe_persona == false)
-            {
-                crear_persona = await query.consulta_sql(sql.SQL_REGISTRAR_PERSONA,
-                    [
-                        persona.nombres,
-                        persona.apellidos,
-                        persona.nombre_completo,
-                        persona.sexo,
-                        persona.correo,
-                        persona.telefono,
-                        persona.identificacion,
-                        persona.fecha_nacimiento
-                    ]
-                );                
-                id_persona = crear_persona.resultado.insertId;
-            }
-            if (id_persona != 0) 
-            {
+        {
+            crear_persona = await query.consulta_sql(sql.SQL_REGISTRAR_PERSONA,
+                [
+                    persona.nombres,
+                    persona.apellidos,
+                    persona.nombre_completo,
+                    persona.sexo,
+                    persona.correo,
+                    persona.telefono,
+                    persona.identificacion,
+                    persona.fecha_nacimiento
+                ]
+            );
+            id_persona = crear_persona.resultado.insertId;
+        }
+        if (id_persona != 0) 
+        {
 
-                if(persona.app === 'app_cliente')
-                    consulta = sql.SQL_REGISTRAR_LOGIN_CLI_NI.replace('[tabla]','login_cliente')
-                else
-                    consulta = sql.SQL_REGISTRAR_LOGIN_CLI_NI.replace('[tabla]','login_niniera')
+            if (persona.app === 'app_cliente')
+                consulta = sql.SQL_REGISTRAR_LOGIN_CLI_NI.replace('[tabla]', 'login_cliente')
+            else
+                consulta = sql.SQL_REGISTRAR_LOGIN_CLI_NI.replace('[tabla]', 'login_niniera')
 
-                let crear_login = await query.consulta_sql(consulta,
-                    [
-                        id_persona,
-                        persona.usuario,
-                        persona.contrasenia,
-                        persona.token_fb,
-                        persona.token_google,
-                        persona.imei,
-                        persona.huella_habilitado,
-                        persona.token_fcm,
-                        0,
-                        1
-                    ]
-                );
-                if (crear_login.tipo_error == 0) {
-                    let id_login = crear_login.resultado.insertId;
-                    connection.commit(() => console.log('successful'))
-                }
-                else 
-                {
-                    connection.rollback(() => console.log('error 1'));
-                    respuesta = crear_login;
-                }
+            let crear_login = await query.consulta_sql(consulta,
+                [
+                    id_persona,
+                    persona.usuario,
+                    persona.contrasenia,
+                    persona.token_fb,
+                    persona.token_google,
+                    persona.imei,
+                    persona.huella_habilitado,
+                    persona.token_fcm,
+                    0,
+                    1
+                ]
+            );
+            if (crear_login.tipo_error == 0)
+            {
+                let id_login = crear_login.resultado.insertId;
+                connection.commit(() => console.log('successful'))
             }
             else 
             {
-                connection.rollback(() => console.log('error 2'));
-                respuesta = crear_persona;
+                connection.rollback(() => console.log('error 1'));
+                respuesta = crear_login;
             }
+        }
+        else 
+        {
+            connection.rollback(() => console.log('error 2'));
+            respuesta = crear_persona;
+        }
 
     }
-    catch (error) {
+    catch (error)
+    {
         throw error;
     }
     return respuesta;
@@ -104,13 +107,16 @@ const registrar_persona = async (persona) => {
 const obtener_preguntas = async () => {
     let preguntas;
     let respuesta = { mensaje: '', tipo_error: 0, resultado: null };
-    try {
+    try
+    {
         respuesta = await query.consulta_sql(sql.SQL_PREGUNTAS);
-        if (respuesta.resultado.length > 0) {
+        if (respuesta.resultado.length > 0)
+        {
             preguntas = respuesta.resultado;
             let opciones = await query.consulta_sql(sql.SQL_OPCIONES);
 
-            for (let i = 0; i < preguntas.length; i++) {
+            for (let i = 0; i < preguntas.length; i++)
+            {
                 let i_pregunta = preguntas[i].id_pregunta;
                 let opcion = opciones.resultado.filter(id => id.id_pregunta == i_pregunta);
                 if (opcion != null)
@@ -119,7 +125,8 @@ const obtener_preguntas = async () => {
             respuesta.resultado = preguntas;
         }
     }
-    catch (error) {
+    catch (error)
+    {
         throw error;
     }
     return respuesta;
@@ -129,18 +136,21 @@ const obtener_preguntas = async () => {
 // registrar respuestas del cuestionario
 const registrar_preguntas = async (id_persona, cuestionario) => {
     let respuesta = { mensaje: '', tipo_error: 0, resultado: null };
-    try {
+    try
+    {
         let existe = await query.consulta_sql(sql.SQL_EXISTE_RESPUESTAS, [id_persona]);
 
-        if (existe.resultado) {
+        if (existe.resultado)
+        {
             respuesta.mensaje = 'Ya realizó el cuestionario.'
             respuesta.tipo_error = 3;
             return respuesta;
         }
 
         let index = 1;
-        await connection.beginTransaction(async err => {});
-        for (let i = 0; i < cuestionario.length; i++) {
+        await connection.beginTransaction(async err => { });
+        for (let i = 0; i < cuestionario.length; i++)
+        {
             let ins_respuestas = await query.consulta_sql(sql.SQL_INSTAR_RESPUESTAS,
                 [
                     cuestionario[i].id_pregunta,
@@ -148,7 +158,8 @@ const registrar_preguntas = async (id_persona, cuestionario) => {
                     id_persona
                 ]
             );
-            if (ins_respuestas.tipo_error != 0) {
+            if (ins_respuestas.tipo_error != 0)
+            {
                 connection.rollback(() => console.log('error'));
                 respuesta = ins_respuestas;
                 return respuesta;
@@ -158,7 +169,8 @@ const registrar_preguntas = async (id_persona, cuestionario) => {
             index++;
         }
     }
-    catch (error) {
+    catch (error)
+    {
         throw error;
     }
     return respuesta;
@@ -173,10 +185,12 @@ const validar_login = async (login, campo) => {
     //logs 1 : EXITOSO\n2 : USUARIO INCORRECTO\n3 : CONTRASENIA INCORRECTA\n4 : BLOQUEADO POR SUPERAR EL NUMERO DE INTENTO PERMITIDOS
     let respuesta = { mensaje: '', tipo_error: 0, resultado: null };
     let tipo_login = 1;
-    try {
+    try
+    {
         // 1: ingreso normal 2: token_fb 3: token_google
         let ing_normal = null, consulta = null;
-        switch (campo) {
+        switch (campo)
+        {
             case 'correo':
             case 'usuario':
             case 'telefono':
@@ -189,13 +203,16 @@ const validar_login = async (login, campo) => {
             default:
                 break;
         }
-        if (ing_normal.resultado.length > 0) {
+        if (ing_normal.resultado.length > 0)
+        {
             let id_persona = ing_normal.resultado[0].id_persona;
             let contrasenia = ing_normal.resultado[0].contrasenia;
             let intentos = ing_normal.resultado[0].numero_intentos;
             let estado = ing_normal.resultado[0].estado_login;
-            if (estado == 1) {
-                if (contrasenia != login.contrasenia && (campo == 'correo' || campo == 'telefono' || campo == 'usuario')) {
+            if (estado == 1)
+            {
+                if (contrasenia != login.contrasenia && (campo == 'correo' || campo == 'telefono' || campo == 'usuario'))
+                {
                     let estado_registro = intentos >= num_max_intentos ? 4 : 3
                     let estado_login = intentos >= num_max_intentos ? 2 : 1
                     intentos++
@@ -214,22 +231,26 @@ const validar_login = async (login, campo) => {
                     respuesta.mensaje = config.MSG_PASS_INCORRECTA;
                     respuesta.tipo_error = config.COD_PASS_INCORRECTA;
                 }
-                else {
+                else
+                {
                     await query.consulta_sql(sql.SQL_REGISTROS_LOGIN, [id_persona, 1, tipo_login]);
                 }
             }
-            else {
+            else
+            {
                 respuesta.mensaje = config.MSG_LOGIN_BLOQUEADO;
                 respuesta.tipo_error = config.COD_LOGIN_BLOQUEADO
             }
         }
-        else {
+        else
+        {
             respuesta.mensaje = config.MSG_PASS_INCORRECTA;
             respuesta.tipo_error = config.COD_PASS_INCORRECTA;
         }
 
     }
-    catch (error) {
+    catch (error)
+    {
         throw error;
     }
     return respuesta;
@@ -246,14 +267,18 @@ const validar_login_admin = async (login) => {
     //login 1 : EXITOSO \n 2 : BLOQUEADO POR SUPERAR EL NUMERO DE INTENTO PERMITIDOS \n 3: BLOQUEADO
     //logs 1 : EXITOSO \n 2 : USUARIO INCORRECTO\n3 : CONTRASENIA INCORRECTA\n4 : BLOQUEADO POR SUPERAR EL NUMERO DE INTENTO PERMITIDOS
 
-    try {
+    try
+    {
         respuesta = await query.consulta_sql(sql.SQL_VALIGAR_LOGIN_ADMIN, [login.usuario]);
-        if (respuesta.resultado[0]) {
+        if (respuesta.resultado[0])
+        {
             let admin = respuesta.resultado[0];
 
-            switch (admin.estado) {
+            switch (admin.estado)
+            {
                 case 1: //Exito
-                    if (admin.contrasenia !== login.contrasenia) {
+                    if (admin.contrasenia !== login.contrasenia)
+                    {
 
                         respuesta.mensaje = config.MSG_PASS_INCORRECTA;
                         respuesta.tipo_error = config.COD_PASS_INCORRECTA;
@@ -278,7 +303,8 @@ const validar_login_admin = async (login) => {
                         });
                         //registrar log
                     }
-                    else {
+                    else
+                    {
                         await query.consulta_sql(sql.SQL_REGISTROS_LOGIN, [admin.id_persona, 1, tipo_login]);
                     }
                     break;
@@ -291,13 +317,15 @@ const validar_login_admin = async (login) => {
                     break;
             }
         }
-        else {
+        else
+        {
             respuesta.mensaje = config.MSG_PASS_INCORRECTA;
             respuesta.tipo_error = config.COD_PASS_INCORRECTA;
             //registrar log
         }
     }
-    catch (err) {
+    catch (err)
+    {
         throw err;
     }
     return respuesta;
@@ -311,10 +339,12 @@ const validar_info_ninera = async (login) => {
 
 const registrar_horario = async (horario) => {
     let respuesta = { mensaje: '', tipo_error: 0, resultado: null };
-    try {
+    try
+    {
         respuesta = await query.consulta_sql(sql.SQL_EXISTE_LOGIN_NINERA, [horario.id_persona]);
-        if (respuesta.resultado[0].existe == 1) {
-            await connection.beginTransaction(async err => {});
+        if (respuesta.resultado[0].existe == 1)
+        {
+            await connection.beginTransaction(async err => { });
             for (let i = 0; i < horario.disponible.length; i++) 
             {
                 let horas = horario.disponible[i];
@@ -343,12 +373,14 @@ const registrar_horario = async (horario) => {
                 connection.commit(() => { });
             }
         }
-        else {
+        else
+        {
             respuesta.mensaje = "La persona no existe"
             respuesta.tipo_error = 1;
         }
     }
-    catch (error) {
+    catch (error)
+    {
         throw error;
     }
     return respuesta;

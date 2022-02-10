@@ -27,6 +27,6 @@ var port = process.env.PORT || 3005;
 app.listen(port,(err) => 
     {
         if (err) throw err;
-        console.log('conectado al puerto ',port)
+        console.log('conectado al puerto: ',port)
     }
 );

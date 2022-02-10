@@ -1,26 +1,25 @@
 const multer = require("multer");
 const uuid = require("uuid").v4;
-const path = require('path')
+const path = require('path');
+const jwt = require("jsonwebtoken");
 
 let regex_correo = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
 
-const validar_correo = (correo) =>
-{
+const validar_correo = (correo) => {
     let validado = false;
 
-    if(regex_correo.test(correo))
+    if (regex_correo.test(correo))
         validado = true;
     console.log(validado);
     return validado;
 }
 
-const respuesta_error = (error) =>
-{
-    let respuesta = 
-    { 
-        mensaje: 'Ocurrió un error vuelve a intentarlo', 
+const respuesta_error = (error) => {
+    let respuesta =
+    {
+        mensaje: 'Ocurrió un error vuelve a intentarlo',
         tipo_error: 1,
-        resultado: null 
+        resultado: null
     };
     console.log(error);
     // guardar error que se produjo
@@ -35,20 +34,24 @@ const validar_cedula = (dni) => {
     var longcheck = longitud - 1;
     let i = 0;
     let valida = false; // cedula valida
-    if (dni !== "" && longitud === 10) {
-        for (i; i < longcheck; i++) {
-            if (i % 2 === 0) {
+    if (dni !== "" && longitud === 10)
+    {
+        for (i; i < longcheck; i++)
+        {
+            if (i % 2 === 0)
+            {
                 var aux = dni.charAt(i) * 2;
                 if (aux > 9) aux -= 9;
                 total += aux;
-            } else {
+            } else
+            {
                 total += parseInt(dni.charAt(i)); // parseInt o concatenará en lugar de sumar
             }
         }
 
         total = total % 10 ? 10 - total % 10 : 0;
 
-        if (dni.charAt(longitud - 1) == total) 
+        if (dni.charAt(longitud - 1) == total)
             valida = true;
     }
     return valida;
@@ -59,30 +62,55 @@ const validar_cedula = (dni) => {
 const storage = multer.diskStorage({
     //destination: null,//path.join(__dirname, '../public/static/images'),
     filename: (req, file, cb) => {
-        cb(null, uuid() +  path.extname(file.originalname).toLocaleLowerCase())
+        cb(null, uuid() + path.extname(file.originalname).toLocaleLowerCase())
     }
 });
 
 const upload = multer(
     {
         storage,
-        fileFilter: (req, file, cb) => 
-        {
+        fileFilter: (req, file, cb) => {
             const typesFile = /jpeg|png|jpg/
             const extname = typesFile.test(file.mimetype)
             const names = typesFile.test(path.extname(file.originalname).toLocaleLowerCase());
-            if (names && extname) 
+            if (names && extname)
                 return cb(null, true)
-            else 
-                return false;            
+            else
+                return false;
         }
     }
-).single('imagen')
+).single('imagen');
+
+
+
+const secret_token = process.env.private_token || 'Prueba de datos';
+
+//crear un token para un usuario
+const add_jswt = async (user_id) => 
+{
+    var token = await jwt.sign(user_id, secret_token, { expiresIn: '2 days' });
+    return token;
+};
+
+//comprobar el token que me pasen por el headers
+const validar_jswt = async (user) => 
+{
+    try
+    {
+        let compare = await jwt.verify(user, secret_token);
+        return compare;
+    } 
+    catch (error)
+    {
+        return false;
+    }
+}
 
 
 
 
-module.exports = 
+
+module.exports =
 {
     validar_correo,
     respuesta_error,
